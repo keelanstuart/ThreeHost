@@ -1,0 +1,29 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="ThreeHost.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="ContentReferences" Type="System.Collections.Specialized.StringCollection" Scope="User">
+      <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;ArrayOfString xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
+  &lt;string&gt;Z:/_Aegis_Non_Phase/12172020_DVD_Delivery/AEGIS-MDL-MEDIA000042/Models&lt;/string&gt;
+  &lt;string&gt;Z:/Aegis_Phase 0/AEgis_Phase 0_Rev.A/Models&lt;/string&gt;
+  &lt;string&gt;Z:/Aegis_Phase 1/AEgis_Phase 1_Rev.A/Models&lt;/string&gt;
+  &lt;string&gt;Z:/Aegis_Phase 1/AEgis_Phase 1_Rev.C/2020-05-07-01-aegis-cm2-models-phase1/Models&lt;/string&gt;
+  &lt;string&gt;Z:/Aegis_Phase 2/AEgis_Phase 2_Rev.A/AEGIS-MDL-MEDIA000026/Models&lt;/string&gt;
+  &lt;string&gt;Z:/Aegis_Phase 2/AEgis_Phase 2_Rev.B/AEGIS-MDL_MEDIA000026/Models&lt;/string&gt;
+  &lt;string&gt;Z:/Aegis_Phase 2/AEgis_Phase 2_Rev.B/AEGIS-MDL-MEDIA000029/Models&lt;/string&gt;
+  &lt;string&gt;Z:/Aegis_Phase 3/AEgis_Phase 3_Rev.A/AEGIS-MDL-MEDIA000034/Models&lt;/string&gt;
+  &lt;string&gt;Z:/Aegis_Phase 3/AEgis_Phase 3_Rev.B/AEGIS-MDL-MEDIA000034/Models&lt;/string&gt;
+  &lt;string&gt;Z:/Aegis_Phase 4/AEgis_Phase 4_Rev.A/AEGIS-MDL-MEDIA000042/Models&lt;/string&gt;
+  &lt;string&gt;Z:/Aegis_Phase 4/AEgis_Phase 4_Rev.B/AEGIS-MDL-MEDIA000045/Models&lt;/string&gt;
+  &lt;string&gt;D:/Models&lt;/string&gt;
+&lt;/ArrayOfString&gt;</Value>
+    </Setting>
+    <Setting Name="AppReferences" Type="System.Collections.Specialized.StringCollection" Scope="User">
+      <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;ArrayOfString xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
+  &lt;string&gt;D:/proj/moov/moov.html&lt;/string&gt;
+&lt;/ArrayOfString&gt;</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
