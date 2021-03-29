@@ -17,11 +17,18 @@ namespace ThreeHost
 		string curAppUrl, curAppDir;
 		string curContentJson, curContentDir;
 
+		private bool slideshowRunning;
+		private ContentTreeNode slideshowRoot;
+		private int slideshowIndex;
+		private int slideshowLoadWait;
+
 		//Dictionary<string, List<string>> contentItems = new Dictionary<string, List<string>>();
 
 		public BrowserForm()
 		{
 			evReady = new AutoResetEvent(false);
+
+			slideshowRunning = false;
 
 			InitializeComponent();
 			HandleResize();
@@ -54,6 +61,27 @@ namespace ThreeHost
 			}
 
 			Properties.Settings.Default.Save();
+		}
+
+		public void LoadModel(string path)
+		{
+			if (InvokeRequired)
+			{
+				try
+				{
+					this.Invoke(new Action<string>(LoadModel), new object[] { path });
+				}
+				catch (Exception)
+				{
+				}
+
+				return;
+			}
+
+			string url = Program.content_server.BaseRequestUrl() + path;
+
+			curContentJson = JsonConvert.SerializeObject(new LoadModelMessage(url));
+			webView2Control.CoreWebView2.PostWebMessageAsJson(curContentJson);
 		}
 
 		#region Event Handlers
@@ -121,6 +149,7 @@ namespace ThreeHost
 		#region UI event handlers
 		private void BtnRefresh_Click(object sender, EventArgs e)
 		{
+			slideshowRunning = false;
 			webView2Control.Reload();
 		}
 
@@ -409,11 +438,23 @@ namespace ThreeHost
 			public string path { get; set; }
 		}
 
+		protected sealed class DemoModeMessage : JSMessage
+		{
+			public DemoModeMessage(bool e) : base("demomode") { enabled = e; }
+			public bool enabled { get; set; }
+		}
+
+		protected sealed class UnloadModelMessage : JSMessage
+		{
+			public UnloadModelMessage() : base("unloadmodel") { }
+		}
+
 		private void ContentTree_AfterSelect(object sender, TreeViewEventArgs e)
 		{
 			ContentTreeNode ctn = (ContentTreeNode)e.Node;
 			bool isfolder = (ctn.Parent == null) ? true : false;
 			removeContentFolderButton.Enabled = isfolder;
+			slideshowButton.Enabled = isfolder;
 
 			webView2Control.CoreWebView2.Stop();
 
@@ -424,10 +465,9 @@ namespace ThreeHost
 
 				Thread.Sleep(1);
 
-				string url = Program.content_server.BaseRequestUrl() + ctn.Text;
+				//Application.UseWaitCursor = true;
 
-				curContentJson = JsonConvert.SerializeObject(new LoadModelMessage(url));
-				webView2Control.CoreWebView2.PostWebMessageAsJson(curContentJson);
+				LoadModel(ctn.Text);
 			}
 		}
 
@@ -530,9 +570,74 @@ namespace ThreeHost
 			InitialPanelUpdate();
 		}
 
+		private void slideshowButton_Click(object sender, EventArgs e)
+		{
+			if (slideshowRunning)
+				return;
+
+			slideshowRunning = true;
+
+			curContentJson = JsonConvert.SerializeObject(new DemoModeMessage(true));
+			webView2Control.CoreWebView2.PostWebMessageAsJson(curContentJson);
+
+			Screen.GetWorkingArea(DisplayRectangle);
+
+			slideshowRoot = (ContentTreeNode)(contentTree.SelectedNode);
+			slideshowIndex = 0;
+
+			curContentDir = slideshowRoot.Text;
+			Program.content_server.UpdateRootDir(curContentDir);
+
+			Task t = new Task(() =>	{ LoadModel(slideshowRoot.Nodes[slideshowIndex].Text); });
+			t.Start();
+		}
+
+		private void unloadModelToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			curContentJson = JsonConvert.SerializeObject(new UnloadModelMessage());
+			webView2Control.CoreWebView2.PostWebMessageAsJson(curContentJson);
+			contentTree.SelectedNode = null;
+		}
+
 		private void webView2Control_WebMessageReceived(object sender, CoreWebView2WebMessageReceivedEventArgs e)
 		{
+			string msg;
+			try
+			{
+				msg = e.TryGetWebMessageAsString();
+			}
+			catch (System.ArgumentException)
+			{
+				msg = "";
+			}
 
+			if (msg.Contains("load_"))
+			{
+				//Application.UseWaitCursor = false;
+
+				// if the slideshow is running, then 
+				if (slideshowRunning)
+				{
+					slideshowLoadWait = msg.Contains("ok") ? 50000 : 0;
+
+					slideshowIndex = (slideshowIndex + 1) % slideshowRoot.GetNodeCount(false);
+
+					Task t = new Task(() =>
+					{
+						Thread.Sleep(slideshowLoadWait);
+
+						if (slideshowRunning)
+							LoadModel(slideshowRoot.Nodes[slideshowIndex].Text);
+					});
+
+					if (slideshowRunning)
+						t.Start();
+				}
+			}
+			else if (msg.Contains("exitdemo"))
+			{
+				slideshowRunning = false;
+			}
 		}
 
 		private void refreshAppCodeToolStripMenuItem_Click(object sender, EventArgs e)
@@ -543,6 +648,7 @@ namespace ThreeHost
 
 			webView2Control.Source = new Uri(curAppUrl);
 			webView2Control.Reload();
+			slideshowRunning = false;
 
 			// we don't want to have to select something else then select the content item again...
 			contentTree.SelectedNode = null;

@@ -47,6 +47,8 @@ namespace ThreeHost
 			System.Windows.Forms.ToolStripButton addAppButton;
 			System.Windows.Forms.TabPage tabPageContent;
 			this.removeContentFolderButton = new System.Windows.Forms.ToolStripButton();
+			this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+			this.slideshowButton = new System.Windows.Forms.ToolStripButton();
 			this.appList = new System.Windows.Forms.CheckedListBox();
 			this.removeAppButton = new System.Windows.Forms.ToolStripButton();
 			this.contentTree = new System.Windows.Forms.TreeView();
@@ -66,6 +68,7 @@ namespace ThreeHost
 			this.typeTabs = new System.Windows.Forms.TabControl();
 			this.split = new System.Windows.Forms.Splitter();
 			this.webView2Control = new Microsoft.Web.WebView2.WinForms.WebView2();
+			this.unloadModelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			contentTabTools = new System.Windows.Forms.ToolStrip();
 			addContentFolderButton = new System.Windows.Forms.ToolStripButton();
 			tabPageApps = new System.Windows.Forms.TabPage();
@@ -86,7 +89,9 @@ namespace ThreeHost
 			// 
 			contentTabTools.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             addContentFolderButton,
-            this.removeContentFolderButton});
+            this.removeContentFolderButton,
+            this.toolStripSeparator1,
+            this.slideshowButton});
 			contentTabTools.Location = new System.Drawing.Point(3, 3);
 			contentTabTools.Name = "contentTabTools";
 			contentTabTools.Size = new System.Drawing.Size(186, 25);
@@ -112,6 +117,22 @@ namespace ThreeHost
 			this.removeContentFolderButton.Size = new System.Drawing.Size(23, 22);
 			this.removeContentFolderButton.Text = "Remove Top-Level Content Folder";
 			this.removeContentFolderButton.Click += new System.EventHandler(this.RemoveContentFolderButton_Click);
+			// 
+			// toolStripSeparator1
+			// 
+			this.toolStripSeparator1.Name = "toolStripSeparator1";
+			this.toolStripSeparator1.Size = new System.Drawing.Size(6, 25);
+			// 
+			// slideshowButton
+			// 
+			this.slideshowButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+			this.slideshowButton.Enabled = false;
+			this.slideshowButton.Image = ((System.Drawing.Image)(resources.GetObject("slideshowButton.Image")));
+			this.slideshowButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+			this.slideshowButton.Name = "slideshowButton";
+			this.slideshowButton.Size = new System.Drawing.Size(23, 22);
+			this.slideshowButton.Text = "Slideshow";
+			this.slideshowButton.Click += new System.EventHandler(this.slideshowButton_Click);
 			// 
 			// tabPageApps
 			// 
@@ -225,20 +246,21 @@ namespace ThreeHost
 			// refreshAppCodeToolStripMenuItem
 			// 
 			this.refreshAppCodeToolStripMenuItem.Name = "refreshAppCodeToolStripMenuItem";
-			this.refreshAppCodeToolStripMenuItem.Size = new System.Drawing.Size(169, 22);
+			this.refreshAppCodeToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
 			this.refreshAppCodeToolStripMenuItem.Text = "Refresh App Code";
 			this.refreshAppCodeToolStripMenuItem.Click += new System.EventHandler(this.refreshAppCodeToolStripMenuItem_Click);
 			// 
 			// exitToolStripMenuItem
 			// 
 			this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-			this.exitToolStripMenuItem.Size = new System.Drawing.Size(169, 22);
+			this.exitToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
 			this.exitToolStripMenuItem.Text = "E&xit";
 			// 
 			// viewToolStripMenuItem
 			// 
 			this.viewToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.debugConsoleToolStripMenuItem});
+            this.debugConsoleToolStripMenuItem,
+            this.unloadModelToolStripMenuItem});
 			this.viewToolStripMenuItem.Name = "viewToolStripMenuItem";
 			this.viewToolStripMenuItem.Size = new System.Drawing.Size(44, 22);
 			this.viewToolStripMenuItem.Text = "View";
@@ -246,7 +268,7 @@ namespace ThreeHost
 			// debugConsoleToolStripMenuItem
 			// 
 			this.debugConsoleToolStripMenuItem.Name = "debugConsoleToolStripMenuItem";
-			this.debugConsoleToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
+			this.debugConsoleToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
 			this.debugConsoleToolStripMenuItem.Text = "Debug Console";
 			this.debugConsoleToolStripMenuItem.Click += new System.EventHandler(this.debugConsoleToolStripMenuItem_Click);
 			// 
@@ -318,6 +340,13 @@ namespace ThreeHost
 			this.webView2Control.CoreWebView2InitializationCompleted += new System.EventHandler<Microsoft.Web.WebView2.Core.CoreWebView2InitializationCompletedEventArgs>(this.WebView2Control_CoreWebView2InitializationCompleted);
 			this.webView2Control.WebMessageReceived += new System.EventHandler<Microsoft.Web.WebView2.Core.CoreWebView2WebMessageReceivedEventArgs>(this.webView2Control_WebMessageReceived);
 			// 
+			// unloadModelToolStripMenuItem
+			// 
+			this.unloadModelToolStripMenuItem.Name = "unloadModelToolStripMenuItem";
+			this.unloadModelToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.unloadModelToolStripMenuItem.Text = "Unload Model";
+			this.unloadModelToolStripMenuItem.Click += new System.EventHandler(this.unloadModelToolStripMenuItem_Click);
+			// 
 			// BrowserForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -372,6 +401,9 @@ namespace ThreeHost
 		private System.Windows.Forms.ImageList contentImageList;
 		private System.Windows.Forms.ToolStripMenuItem refreshAppCodeToolStripMenuItem;
 		private System.Windows.Forms.ToolStripStatusLabel statusLabel;
+		private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+		private System.Windows.Forms.ToolStripButton slideshowButton;
+		private System.Windows.Forms.ToolStripMenuItem unloadModelToolStripMenuItem;
 	}
 }
 
