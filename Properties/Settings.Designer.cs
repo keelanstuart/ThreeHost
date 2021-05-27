@@ -27,17 +27,6 @@ namespace ThreeHost.Properties {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute(@"<?xml version=""1.0"" encoding=""utf-16""?>
 <ArrayOfString xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"">
-  <string>Z:/_Aegis_Non_Phase/12172020_DVD_Delivery/AEGIS-MDL-MEDIA000042/Models</string>
-  <string>Z:/Aegis_Phase 0/AEgis_Phase 0_Rev.A/Models</string>
-  <string>Z:/Aegis_Phase 1/AEgis_Phase 1_Rev.A/Models</string>
-  <string>Z:/Aegis_Phase 1/AEgis_Phase 1_Rev.C/2020-05-07-01-aegis-cm2-models-phase1/Models</string>
-  <string>Z:/Aegis_Phase 2/AEgis_Phase 2_Rev.A/AEGIS-MDL-MEDIA000026/Models</string>
-  <string>Z:/Aegis_Phase 2/AEgis_Phase 2_Rev.B/AEGIS-MDL_MEDIA000026/Models</string>
-  <string>Z:/Aegis_Phase 2/AEgis_Phase 2_Rev.B/AEGIS-MDL-MEDIA000029/Models</string>
-  <string>Z:/Aegis_Phase 3/AEgis_Phase 3_Rev.A/AEGIS-MDL-MEDIA000034/Models</string>
-  <string>Z:/Aegis_Phase 3/AEgis_Phase 3_Rev.B/AEGIS-MDL-MEDIA000034/Models</string>
-  <string>Z:/Aegis_Phase 4/AEgis_Phase 4_Rev.A/AEGIS-MDL-MEDIA000042/Models</string>
-  <string>Z:/Aegis_Phase 4/AEgis_Phase 4_Rev.B/AEGIS-MDL-MEDIA000045/Models</string>
   <string>D:/Models</string>
 </ArrayOfString>")]
         public global::System.Collections.Specialized.StringCollection ContentReferences {
