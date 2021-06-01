@@ -17,11 +17,18 @@ namespace ThreeHost
 		string curAppUrl, curAppDir;
 		string curContentJson, curContentDir;
 
+		private bool slideshowRunning;
+		private ContentTreeNode slideshowRoot;
+		private int slideshowIndex;
+		private int slideshowLoadWait;
+
 		//Dictionary<string, List<string>> contentItems = new Dictionary<string, List<string>>();
 
 		public BrowserForm()
 		{
 			evReady = new AutoResetEvent(false);
+
+			slideshowRunning = false;
 
 			InitializeComponent();
 			HandleResize();
@@ -54,6 +61,27 @@ namespace ThreeHost
 			}
 
 			Properties.Settings.Default.Save();
+		}
+
+		public void LoadModel(string path)
+		{
+			if (InvokeRequired)
+			{
+				try
+				{
+					this.Invoke(new Action<string>(LoadModel), new object[] { path });
+				}
+				catch (Exception)
+				{
+				}
+
+				return;
+			}
+
+			string url = Program.content_server.BaseRequestUrl() + path;
+
+			var altmsg = JsonConvert.SerializeObject(new LoadModelMessage(url));
+			webView2Control.CoreWebView2.PostWebMessageAsJson(altmsg);
 		}
 
 		#region Event Handlers
@@ -121,6 +149,7 @@ namespace ThreeHost
 		#region UI event handlers
 		private void BtnRefresh_Click(object sender, EventArgs e)
 		{
+			slideshowRunning = false;
 			webView2Control.Reload();
 		}
 
@@ -301,6 +330,7 @@ namespace ThreeHost
 
 			if (AddFilesInFolder(path, "*.fbx", delegate (ContentTreeNode node)
 			{
+/*
 				XmlTextReader reader = null;
 				string filename = Path.ChangeExtension(node.fullpath, "xml");
 				if (!File.Exists(filename))
@@ -352,6 +382,7 @@ namespace ThreeHost
 					if (reader != null)
 						reader.Close();
 				}
+*/
 
 			}) <= 0)
 			{
@@ -409,11 +440,30 @@ namespace ThreeHost
 			public string path { get; set; }
 		}
 
+		protected sealed class AvailableTexturesMessage : JSMessage
+		{
+			// comma-delimited list of texture mods ("od", "tan", "blue", etc.)
+			public AvailableTexturesMessage(string cdltextures) : base("availabletextures") { texturelist = cdltextures; }
+			public string texturelist { get; set; }
+		}
+
+		protected sealed class DemoModeMessage : JSMessage
+		{
+			public DemoModeMessage(bool e) : base("demomode") { enabled = e; }
+			public bool enabled { get; set; }
+		}
+
+		protected sealed class UnloadModelMessage : JSMessage
+		{
+			public UnloadModelMessage() : base("unloadmodel") { }
+		}
+
 		private void ContentTree_AfterSelect(object sender, TreeViewEventArgs e)
 		{
 			ContentTreeNode ctn = (ContentTreeNode)e.Node;
 			bool isfolder = (ctn.Parent == null) ? true : false;
 			removeContentFolderButton.Enabled = isfolder;
+			slideshowButton.Enabled = isfolder;
 
 			webView2Control.CoreWebView2.Stop();
 
@@ -424,10 +474,9 @@ namespace ThreeHost
 
 				Thread.Sleep(1);
 
-				string url = Program.content_server.BaseRequestUrl() + ctn.Text;
+				//Application.UseWaitCursor = true;
 
-				curContentJson = JsonConvert.SerializeObject(new LoadModelMessage(url));
-				webView2Control.CoreWebView2.PostWebMessageAsJson(curContentJson);
+				LoadModel(ctn.Text);
 			}
 		}
 
@@ -530,9 +579,167 @@ namespace ThreeHost
 			InitialPanelUpdate();
 		}
 
+		private void slideshowButton_Click(object sender, EventArgs e)
+		{
+			if (slideshowRunning)
+				return;
+
+			slideshowRunning = true;
+
+			curContentJson = JsonConvert.SerializeObject(new DemoModeMessage(true));
+			webView2Control.CoreWebView2.PostWebMessageAsJson(curContentJson);
+
+			Screen.GetWorkingArea(DisplayRectangle);
+
+			slideshowRoot = (ContentTreeNode)(contentTree.SelectedNode);
+			slideshowIndex = 0;
+
+			curContentDir = slideshowRoot.Text;
+			Program.content_server.UpdateRootDir(curContentDir);
+
+			Task t = new Task(() =>	{ LoadModel(slideshowRoot.Nodes[slideshowIndex].Text); });
+			t.Start();
+		}
+
+		private void unloadModelToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			curContentJson = JsonConvert.SerializeObject(new UnloadModelMessage());
+			webView2Control.CoreWebView2.PostWebMessageAsJson(curContentJson);
+			contentTree.SelectedNode = null;
+		}
+
+		private String[] ExtractTextureNameParts(String fn)
+        {
+			String[] ret = null;
+
+			int count = 0;
+			foreach (char c in fn)
+				if (c == '_') count++;
+
+			if (count == 4)
+			{
+				ret = new String[count + 1];
+				int uspos = fn.IndexOf('_');
+				int i = 0;
+				while (uspos >= 0)
+				{
+					ret[i] = fn.Substring(0, uspos);
+					fn = fn.Substring(uspos + 1);
+					uspos = fn.IndexOf('_');
+					i++;
+				}
+				ret[i] = fn;
+			}
+
+			return ret;
+		}
+
 		private void webView2Control_WebMessageReceived(object sender, CoreWebView2WebMessageReceivedEventArgs e)
 		{
+			string msg;
+			try
+			{
+				msg = e.TryGetWebMessageAsString();
+			}
+			catch (System.ArgumentException)
+			{
+				msg = "";
+			}
 
+			if (msg.Contains("load_"))
+			{
+				//Application.UseWaitCursor = false;
+
+				// if the slideshow is running, then 
+				if (slideshowRunning)
+				{
+					slideshowLoadWait = msg.Contains("ok") ? 50000 : 0;
+
+					slideshowIndex = (slideshowIndex + 1) % slideshowRoot.GetNodeCount(false);
+
+					Task t = new Task(() =>
+					{
+						Thread.Sleep(slideshowLoadWait);
+
+						if (slideshowRunning)
+							LoadModel(slideshowRoot.Nodes[slideshowIndex].Text);
+					});
+
+					if (slideshowRunning)
+						t.Start();
+				}
+			}
+			else if (msg.Contains("querytexturematches:"))
+			{
+				// we're going to extract the base filename and use it to search for alternate textures,
+				// then construct a response that has those alternates in it.
+				int colonidx = msg.LastIndexOf(":");
+				if (colonidx >= 0)
+				{
+					String fullfn = msg.Substring(colonidx + 1);
+					String basefn = Path.GetFileNameWithoutExtension(fullfn);
+					String basep = Path.GetDirectoryName(fullfn);
+					String ext = Path.GetExtension(fullfn);
+
+					String[] fncomps = ExtractTextureNameParts(basefn);
+					if (fncomps != null)
+					{
+						fncomps[2] = "*";
+
+						int backct = 0;
+						while (basep.StartsWith("..\\"))
+                        {
+							basep = basep.Remove(0, 3);
+							backct++;
+                        }
+
+						String remotefn = "", searchfn = basep + "\\" + String.Join("_", fncomps) + ext;
+
+						while (backct > 0)
+						{
+							remotefn += "..\\";
+							backct--;
+						}
+						remotefn += searchfn;
+
+						String searchdir = curContentDir;
+
+						String[] altfiles = Directory.GetFiles(curContentDir, searchfn);
+						if (altfiles.Length > 0)
+						{
+							String alts = remotefn;
+
+							foreach (String altfile in altfiles)
+							{
+								String[] afncomps = ExtractTextureNameParts(Path.GetFileNameWithoutExtension(altfile));
+								if ((afncomps != null) && (afncomps.Length >= 5))
+								{
+									int j = afncomps.Length - 3;    // the color / ir indicator
+									if ((afncomps[j] == "all") ||
+										(afncomps[j] == "ir") ||
+										(afncomps[j] == "irbase") ||
+										(afncomps[j] == "irmotion") ||
+										(afncomps[j] == "irweapon") ||
+										(afncomps[j] == "irengine"))
+										continue;
+
+									if (alts.Length > 0)
+										alts = alts + ",";
+
+									alts = alts + afncomps[2]; // searchfn.Replace("*", afncomps[2]);
+								}
+							}
+
+							curContentJson = JsonConvert.SerializeObject(new AvailableTexturesMessage(alts));
+							webView2Control.CoreWebView2.PostWebMessageAsJson(curContentJson);
+						}
+					}
+				}
+			}
+			else if (msg.Contains("exitdemo"))
+			{
+				slideshowRunning = false;
+			}
 		}
 
 		private void refreshAppCodeToolStripMenuItem_Click(object sender, EventArgs e)
@@ -543,6 +750,7 @@ namespace ThreeHost
 
 			webView2Control.Source = new Uri(curAppUrl);
 			webView2Control.Reload();
+			slideshowRunning = false;
 
 			// we don't want to have to select something else then select the content item again...
 			contentTree.SelectedNode = null;
