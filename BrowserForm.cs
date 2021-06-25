@@ -634,7 +634,12 @@ namespace ThreeHost
 			return ret;
 		}
 
-		private void webView2Control_WebMessageReceived(object sender, CoreWebView2WebMessageReceivedEventArgs e)
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+			Close();
+        }
+
+        private void webView2Control_WebMessageReceived(object sender, CoreWebView2WebMessageReceivedEventArgs e)
 		{
 			string msg;
 			try
